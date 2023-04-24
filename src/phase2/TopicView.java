@@ -62,7 +62,7 @@ public class TopicView extends JFrame{
 		frame.getContentPane().add(topicSubject);
 		topicSubject.setColumns(10);
 
-		JButton clientLoginBtn = new JButton("Connect");
+		JButton clientLoginBtn = new JButton("Create");
 		clientLoginBtn.addActionListener(new ActionListener() { //action will be taken on clicking login button
 			public void actionPerformed(ActionEvent e) {
 				try {
