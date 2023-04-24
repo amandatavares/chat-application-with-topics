@@ -29,8 +29,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -56,6 +54,8 @@ public class ServerView {
 																					// usernames used and their socket connections
 	private static Set<String> activeUserSet = new HashSet<>(); // this set keeps track of all the active users 
 
+	private static Map<String, Socket> allTopicsList = new ConcurrentHashMap<>();
+
 	private static Map<String, MessageProducer> userWiseMessageProducerMap = new ConcurrentHashMap<>(); //map to keep ActiveMQ producer for every client
 	
 	private static Map<String, MessageConsumer> userWiseMessageConsumerMap = new ConcurrentHashMap<>();//map to keep ActiveMQ consumer for every client
@@ -72,13 +72,19 @@ public class ServerView {
 
 	private JList activeClientList; // variable on UI
 
+	private JList allTopicsNameList; // variable on UI
+
 	private DefaultListModel<String> activeDlm = new DefaultListModel<String>(); // keeps list of active users for display on UI
 
 	private DefaultListModel<String> allDlm = new DefaultListModel<String>(); // keeps list of all users for display on UI
 	
+	private DefaultListModel<String> topicsDlm = new DefaultListModel<String>(); // keeps list of active users for display on UI
+
 	private static String url = ActiveMQConnection.DEFAULT_BROKER_URL;
     
 	// private static LoginClient loginClient;
+	private TopicPublisher topicPublisher;
+
 	/**
 	 * Launch the application.
 	 */
@@ -378,12 +384,20 @@ public class ServerView {
 		}
 	}
 
+	public void addTopic(String id, Socket s) {
+		allTopicsList.put(id, s); // add new user to allUserList and activeUserSet
+		// topicsDlm.addElement(id); // add this user to the active user JList
+		if (!topicsDlm.contains(id)) // if topic
+			topicsDlm.addElement(id);
+		allTopicsNameList.setModel(topicsDlm); // show the active and allUser List to the swing app in JList
+	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() { //here components of Swing App UI are initilized
 		frame = new JFrame();
-		frame.setBounds(100, 100, 651, 400);
+		frame.setBounds(100, 100, 651, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.setTitle("Server");
@@ -394,7 +408,7 @@ public class ServerView {
 		frame.getContentPane().add(serverMessageBoard);
 		serverMessageBoard.setText("Welcome! Starting Server, please wait...\n");
 
-		JButton newClientBtn = new JButton("New client");
+		JButton newClientBtn = new JButton("New user");
 		newClientBtn.addActionListener(new ActionListener() { //action will be taken on clicking login button
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Ta entrando");
@@ -403,8 +417,8 @@ public class ServerView {
 			}
 		});
 		
-		newClientBtn.setFont(new Font("Tahoma", Font.PLAIN, 17));
-		newClientBtn.setBounds(410, 300, 132, 40);
+		newClientBtn.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		newClientBtn.setBounds(512, 5, 120, 30);
 		frame.getContentPane().add(newClientBtn);
 
 		allUserNameList = new JList();
@@ -424,5 +438,27 @@ public class ServerView {
 		lblNewLabel_1.setBounds(412, 13, 98, 23);
 		frame.getContentPane().add(lblNewLabel_1);
 
+		// Topics 12, 13, 388, 278
+		allTopicsNameList = new JList();
+		allTopicsNameList.setBounds(12, 330, 218, 116);
+		frame.getContentPane().add(allTopicsNameList);
+
+		JLabel lblNewTopic = new JLabel("All Topics");
+		lblNewTopic.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewTopic.setBounds(12, 310, 127, 16);
+		frame.getContentPane().add(lblNewTopic);
+
+		JButton newTopicBtn = new JButton("New topic");
+		newTopicBtn.addActionListener(new ActionListener() { //action will be taken on clicking login button
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Ta entrando no topic");
+				new TopicView().setVisible(true);
+				System.out.println("nao abre pq nao quer");
+			}
+		});
+		
+		newTopicBtn.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		newTopicBtn.setBounds(120, 300, 120, 30);
+		frame.getContentPane().add(newTopicBtn);
 	}
 }
